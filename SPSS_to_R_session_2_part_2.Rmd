@@ -1,0 +1,143 @@
+---
+title: "SPSS to R: analysis report"
+author: "Rhys Davies"
+date: "`r Sys.Date()`"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(DescTools)
+library(rstatix)
+library(correlation)
+library(gtable)
+library(gtsummary)
+library(jtools) # Useful for generating APA ready plots
+```
+
+Before cracking on with the second part of today's session, we are going to quickly learn about how R can be used to render documents. This is done using the `Knit` button. To tidy our end document, we will also use some extra commands in our code chunks. The `echo=FALSE` is used to prevent our code from being rendered. Meanwhile, `message = FALSE` is used to prevent any warning messages from being rendered. 
+
+```{r, echo=FALSE, message = FALSE, results= FALSE}
+#code to upload our newly saved file into R.
+df_tidy <- read_csv("tidy_data.csv") %>% mutate(group = as.factor(group))
+summary(df_tidy) 
+```
+
+## Running and reporting analyses
+
+Now that the hard work of preparing our data is complete. We can run our analyses! Today we will perform t-tests to compare the effect of the intervention on depression, anxiety and stress. 
+
+From there, we will perform a regression analysis to predict depression scores whilst controlling for exposure to stressful life events, social support, and the intervention.
+
+We will also use this to demonstrate how we can use R to generate our analysis reports. So no more copy and pasting. Just smoooooooth sailing.
+
+Here we will be taking full advantage of the amazing `gtsummary()` package to conduct and report our t-tests. Their package makes it super easy to generate publication ready tables, and it can be rendered into Word documents thorugh R! For more information on how to use the package, please check out their [vignettes](https://www.danieldsjoberg.com/gtsummary/articles/tbl_summary.html). 
+
+The code might look a little intimidating, but we will walk you through it so that you can also use this for your own analysis.
+
+For each analysis, we will display the raw version and the tidied version. We will also show you how to render your analysis to finish the session. 
+
+## T-test report
+
+### Raw results
+```{r, echo=FALSE, message = FALSE}
+t_test(stress ~ group, data = df_tidy)
+```
+
+
+### Publication ready(er) results
+```{r, echo=FALSE, message = FALSE}
+  df_tidy %>%
+  select(group, anxiety, stress, depression) %>%
+  tbl_summary(by = group, 
+              missing = "no",
+              statistic = list(all_continuous() ~ "{mean} ({sd})")) %>%
+  add_p(everything() ~ "t.test") %>%
+  modify_header( # header needs to be modified to display test statistc and df 
+    statistic = "**t-statistic**", 
+    parameter = "**df**"
+  )  %>%
+  # add a header to the statistic column, which is hidden by default
+  modify_fmt_fun(c(statistic , parameter) ~ style_sigfig)
+```
+
+## Corellation analysis
+
+### Rough results
+```{r, results = "asis", echo = FALSE, message = FALSE}
+
+cor_data <- df_tidy %>% 
+  select( anxiety, stress, depression, eventsscore , SOsupport)
+
+results <- correlation(cor_data)
+results
+summary(results)
+
+```
+
+### Publication ready(er) results
+```{r, results = "asis", echo = FALSE, message = FALSE}
+
+ df_tidy %>% select( anxiety, stress, depression, eventsscore , SOsupport) %>%
+    rename(`Anxiety` = anxiety ,
+           `Stress` = stress,
+           `Depression` = depression,
+           `Stressful Life Events` =  eventsscore,
+           `Significant Other Support`=  SOsupport) %>% 
+  correlation::correlation(redundant = TRUE) %>% summary() %>% display()
+
+```
+
+## Regression analysis
+
+
+```{r, echo = FALSE, message = FALSE}
+# Setting the model
+model <- lm(depression ~ group + eventsscore + SOsupport, df_tidy)
+
+```
+### Raw results
+```{r, echo = FALSE, message = FALSE}
+# Ugly (but useful) results 
+summary(model)
+
+```
+
+### Publication ready(er) results
+Please note that some of the table will need editing/re-arranging. For now, I'm not clever enough to do it here. But, I can edit it within the finished word document. 
+```{r, echo = FALSE, message = FALSE}
+# Pretty results 
+tbl_regression(model) %>% 
+  modify_column_unhide(column = std.error) %>% 
+  add_glance_table(include = c(r.squared, adj.r.squared, 
+                               statistic, df, df.residual, p.value)) 
+```
+
+### Publication ready plot
+
+And what use is a fancy table without a fancier plot?! APA guidelines are a little hazy when it comes to plot standards, but here is a good estimate. The title, subtitle and caption have been left empty here, as sometimes it is more useful to edit this within word (sometimes...).
+
+```{r, echo = FALSE, message = FALSE}
+#Generating plot
+ plot <- ggplot(df_tidy,
+                aes(x = eventsscore, y = depression, col = group)
+                ) +
+  geom_point(alpha = .7, position = "jitter")+
+  geom_smooth(method = "lm", se = FALSE) 
+  
+
+#Adding labels and APA theme
+  plot +
+    labs(x = "Exposure to stressful life events",
+         y = "Depression score (DASS)",
+         col = "Condition") +
+     theme_apa(legend.pos = "right", 
+               legend.use.title = TRUE) 
+    
+
+```
+
+## Finishing session
+
+Now click on `Knit` to prepare your word document with all the prepared analyses. 
