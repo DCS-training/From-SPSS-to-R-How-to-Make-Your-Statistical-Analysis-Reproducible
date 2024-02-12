@@ -14,4 +14,4 @@ In part 2 of this course, we will learn to:
 -   A reminder of our analyses.
 -   Learn how to create APA ready analysis outputs - no more copy and pasting our results!
 
-The material in this repo was developed and curated by Rhys Davies. All material collected here is free to use but is covered by a License: License: CC BY-NC 4.0 license 
+The material in this repo was developed and curated by Rhys Davies. All material collected here is free to use but is covered by a License: [![License: CC BY-NC 4.0](https://licensebuttons.net/l/by-nc/4.0/80x15.png)](https://creativecommons.org/licenses/by-nc/4.0/) license
