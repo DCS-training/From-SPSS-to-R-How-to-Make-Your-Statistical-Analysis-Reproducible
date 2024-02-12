@@ -1,0 +1,256 @@
+---
+title: "SPSS to R Conversion - Session 2"
+author: "Rhys Davies"
+date: "`r Sys.Date()`"
+output: html
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+
+```
+
+## Session aims
+
+-   Learn how to upload your own data to R.
+-   Create a data tidying script.
+-   Learn how to save your tidied data (in case you want to transfer analysis to other software/supervisors).
+-   A reminder of our analyses.
+-   Learn how to create APA ready analysis outputs - no more copy and pasting our results!
+
+## Uploading data to R.
+
+Tips:
+- Make sure to save your script in the same folder as your dataset.
+- This will make your life much easier when it comes to re-running your analysis.
+- With R, we can work in a way that protects your raw data and allows you to retrace your steps.
+- We can also use R to save new versions of our data, in any format we want. This can be very useful if you want to re-run your analyses on another software (i.e., AMOS for path analyses).
+
+### Step 1 - File Organisation
+
+This is a more technical aspect of using R. But, doing so will help ensure good data management practices. So whilst it may appear scary, this will help to keep your research organised, your files discoverable, and your ethics committee happy. The key concept for today is that we need all aspects of our analysis in the same folder. This includes the script we are working with, and the data set. So lets run through these steps:
+
+1) Create analysis folder.
+2) [Download dataset](insert link here), and move to our analysis folder.
+3) Save our analysis script (this document) into analysis folder.
+4) Set working directory: Click `Session` on top panel, move to `set working directory`, click `To source file location`. This will tell R to work within the folder that your current R script is saved in. 
+4a) Alternatively, if you are switched on with your path locations, you can use `setwd("~.../.../)` [fill in the gaps as appropriate]. However, this can be tricky. I tend to copy and paste from the above steps, as I'm prone to typos. 
+
+### Step 2 - Uploading and naming our data.
+
+A key aspect of any data analysis is to keep our raw data unchanged, so that we can re-trace our steps, correct any errors, and make our analyses reproducible. R makes this very easy, as you would need to manually code a re-save if you wanted to overwrite your raw code... which takes deliberate effort. 
+
+Instead, it allows us to work with a copy of our data, which we can rename at a whim. It only exists within the session, until we decide to export it - which again takes deliberate effort. If however you are still concerned about protecting the integrity of your raw data, you can always create a new sub-folder to store a backup of your raw-data. 
+
+Anyhow, back to uploading the data! Within R, we have 2 ways of doing this. The first is through the graphic interface, which we can find by clicking the table icon in the `environment` tab. The second is through coding. As I am lazy/"pragmatic", I tend to use the graphic interface for my initial uploading of the data, and then I copy and paste the generated code into my script. This allows me to quickly re-run my code in future sessions without having to navigate the folder system of my computer. 
+
+```{r}
+# Task 1 - Copy and paste your data upload script here. Call your uploaded data "df_raw". This will help us keep track of changes when we get to data cleaning later. 
+
+
+```
+
+## Getting meta with the meta data
+
+Today we will be using a questionnaire-based study. The research was investigating the relationships between stressful life events, psychological distress and social support. 
+
+The data contains convenience sample of 40 individuals who attend a community group.
+
+The group had recently run a ten-week mindfulness training course; therefore, the researcher also recorded whether each respondent had completed this course. This allows us to compare whether the course was effective in reducing symptoms of stress, anxiety and depression, 
+
+You will see that the following variables are in the data set: id, group, number of stressful events experienced in the last year (eventsscore), scores for each of the 21 items on the Depression, Anxiety and Stress Scale (DASS; dass1 - dass21), social support from significant other (SOsupport), friends (friendsupport) and family (famsupport).  
+
+The DASS-21 scale has three subscales of 7 items each. The items for each scale are:
+
+Stress: items  1,    6,     8,    11,    12,    14,    18
+
+Anxiety: items  2,    4,      7,     9,     15,    19,   20
+
+Depression: items  3,    5,     10,    13,    16,   17,   21
+
+
+## Data tidying in R
+
+This is where R comes into its own. Data tidying in R is fantastic. Our script is our own personal notebook - every step of the data tidying process is recorded. And if we need to make any changes for any reason (looking at you reviewer #2...), these changes can be applied and re-run with little effort - meaning that we do not have to repeat the steps of coding and calculating any following analysis, we just get to re-run the analysis script. 
+
+All the steps required for tidying can be overwhelming. My tip is to tidy in layers. Perform each stage separately in manageable bite sized pieces. The most important aspect for this stage is not the coding itself, but rather your note keeping. Use the hash-tags `#` to note what you are doing, and why (especially if complicated).
+
+And don't worry if you ever feel that a problem is too complex to manage. Do what you can in R, and that is good enough for now. As you build more confidence and experience, you'll be able to start coding up any additional steps that are required (and be better equipped at knowing what to search to solve your problems!). 
+
+The key part of this exercise will be the trusty pipe operator `%>%`. This is a tidyverse function that is very powerful when it comes to data tidying. It effectively allows to take an R object, and apply changes to it. It's power comes from it being readable. For now, you can translate it as **"take this object from the left, and do that function on the right to it"**. 
+
+### Data tidying script
+
+#### Step 1 - inspecting our data
+
+```{r}
+
+head(df_raw) # view first 6 rows
+tail(df_raw) # view last 6 rows
+summary(df_raw) # View summary of data - is everything formatted correctly?
+
+
+
+```
+
+#### Step 2 - reformatting data
+
+To remind ourselves of what we have done, we will use comments to summarise the process. Additionally, we will call the new data `df_1` (Actually, you can call it whatever you want. I like using numbers for my stages, as it intuitively reminds me of the processes of my tidying). 
+
+Below, we will relabel and recode the `group` variable to make it more meaningful for our interpretation. R can handle these factors, and will do the required dummy coding behind the scenes. So no more needing to double check what our numbers represent! 
+
+```{r}
+
+df_1 <- df_raw %>% 
+  mutate( group = case_when(group == "1"~ "control",
+                            group == "2" ~ "experiment"),
+          group = as.factor(group)
+          ) # Using mutate to recode variables appropriately
+
+summary(df_1$group)
+
+```
+#### Step 3 - Treating missing data
+
+We may have also noticed that our dataset contains missing values. Thankfully R has loads of useful packages to make working with missing data much easier. Getting to know what's missing in your life/data is very important to ensure that our analysis is accurate. For today, we will give a quick and easy overview to working with the missing data, using the `naniar` package.
+
+```{r}
+library(naniar) # Useful package for easy tools of working with missing data
+
+pct_miss(df_1) # provides percentage of total missing data
+miss_case_summary(df_1) # breaks down missing data percentage by each case
+vis_miss(df_1) # Visually inspect data 
+
+```
+
+
+We can see that case 41 and 42 have a lot of missing entries from the above summary. These participants need to be removed.
+
+```{r}
+df_2 <- df_1[-c(41,42), ] # using base R to manually remove participants, using the minus symbol. 
+
+pct_miss(df_2) 
+miss_case_summary(df_2) 
+vis_miss(df_2)  
+gg_miss_var(df_2) # using gg_miss_var to visualise missing data by variable.
+```
+
+For the others, we will impute based on row-mean values within each subscale. Conveniently, we will notice that all of our missing variables all belong to the depression subscale... How magically convenient! This may/will not be the case for real data, but it is helpful for today, as it stops us being overwhelmed with code. 
+
+```{r}
+
+Depression_data <- df_2  %>%  
+  select(dass3, dass5, dass10, dass16, dass17, dass21)
+
+#Step 2 - applying rowwise imputation to the selected data
+
+library(missMethods) # Useful package for simulating and imputing missing data
+
+Depression_fix <- apply_imputation(Depression_data,
+                                   FUN = mean,
+                                   type = "rowwise")
+
+
+#Step 3 - updating dataset with imputed data - do this by subscale to help brain manage.
+ df_3 <- df_2 %>% mutate(
+  dass3 = Depression_fix$dass3,
+  dass5 = Depression_fix$dass5,
+  dass10 = Depression_fix$dass10,
+  dass16 = Depression_fix$dass16,
+  dass17 = Depression_fix$dass17,
+  dass21 = Depression_fix$dass21,
+)
+
+```
+
+#### Step 4 - Creating composite variables
+
+```{r}
+## Task - compute the DASS subscales. Stress has already been calculated in the code below as an example. Don't forget to use a comma between each command in the `mutate()` function.
+ 
+# Stress: items  dass1, dass6, dass8, dass11, dass12, dass14, dass18
+# 
+# Anxiety: items  dass2, dass4, dass7, dass9, dass15, dass19, dass20
+# 
+# Depression: items  dass3, dass5, dass10, dass13, dass16, dass17,  dass21
+
+df_4 <- df_3 %>% 
+  mutate( # Using mutate to create composite variables
+    stress = dass1 + dass6 + dass8 + dass11 + dass12 + dass14 + dass18,
+    anxiety = ... , 
+    depression = ...
+  ) 
+
+```
+
+
+
+#### Step 5 - Filtering data
+
+Here we will be performing the bane of most researchers - filtering. This includes removing suspect bots, removing duplicates, removing participants who did not finish survey, and removing outliers. 
+
+Today, we will focus on removing outliers on the basis of Z-scores. This is when data is standardised, so that the mean value is 0, and each participant score is converted to their relative standard deviation position. Any participant with entries with less than -3, or greater than +3 can be considered to be a large/influential outlier (source). As such, there is justification to remove them from the data. Prior to this, we need to inspect our data.
+
+```{r}
+summary(df_4) # Using summary to inspect our data
+
+# Using plots to visually inspect our data
+boxplot(df_4$SOsupport) # Any outliers in boxplot?
+hist(df_4$anxiety) # How is the data distributed? (Does it make sense regarding the literature?)
+
+## Task - visually inspect the outliers and distribution of the stress and depression sub scales below:
+
+
+
+```
+
+Now that we have visually inspected our data, we can apply the code to remove our outliers. 
+
+```{r}
+
+# Creating Z score of study measures - useful for subjectively removing outliers. 
+df_5 <- df_4 %>% 
+  mutate(Z_score_life_events = scale(eventsscore),
+         Z_score_anxiety = scale(anxiety),
+         Z_score_stress = scale(stress),
+         Z_score_depression = scale(depression),
+         Z_score_SOsupport = scale(SOsupport),
+         Z_score_friendsupport = scale(friendsupport),
+         Z_score_famsupport = scale(famsupport)
+         ) 
+
+summary(df_5) # Which variable has a Z-score that breaks our +3/-3 boundary?
+  
+### Note: Z-scores between -3 and +3 are recommended as cuttoff for non-exponential data. May not always be appropriate, so know your data first. 
+
+# Task - Use the results of the above summary to identify the variable that needs filtering.
+
+df_6 <- df_5 %>% filter(
+         Z_score_... <= 3 ,
+         Z_score_... >= -3
+  )
+
+summary(df_6)
+boxplot(df_6$SOsupport) # New boxplot
+boxplot(df_4$SOsupport) # Boxplot with outliers
+```
+
+#### Step 5 - Saving a copy of our analysis ready data. 
+
+Now that our data is ready, we can save a copy. This can help us save time on future projects, by saving us the hassle of needing to re-run our tidying script every time. It also allows for communication of our data with others who might not want to go through the hassle/pain of data tidying. Because our source file is already set, our newly saved data will pop straight into our folder. 
+
+For today, we will work with CSV as the file format. It's the recommended format, as it can be opened with multiple pieces of software. Data safety, it is also preferred as the file format is safe from system updates/software disengagements. This is because csv files keep data organised through the simple yet effective **comma** **separated** **values** (aka: **C.S.V**). This also allows them to store much larger datasets in comparison to SAV and xlsx file formats, as there is less complications to manage.
+
+This makes it a commonly used file format in data science activities... So if you ever want to make life difficult for anyone who might steal personal data, make sure to include plenty of comma's in your responses. It will beautifully vandalise their dataset.   
+
+```{r}
+
+#Make sure to check your folder to view your data. Open it up in excel or SPSS if you like! 
+
+write.csv(df_6, "~tidy_data.csv")
+
+```
+
+After the above step is complete, we can now re-run our analysis without having to retrace the steps of cleaning every time. In my own practice, I keep a separate script for tidying and a separate script for analysis. I will then use the tidied data for my analysis. Now it is time for a quick break, and then we will continue in our part-2 analysis document.
+
