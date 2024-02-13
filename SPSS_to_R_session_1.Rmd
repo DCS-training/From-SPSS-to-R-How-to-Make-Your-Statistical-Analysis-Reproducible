@@ -34,7 +34,7 @@ When you click the **Knit** button a document will be generated that includes bo
 
 Today, we will be working with the [**Palmer Penguins**](https://allisonhorst.github.io/palmerpenguins/) data set. This data set investigates the differences in flipper length, and bill length + depth, between different species of Penguins, across different island, and across Penguin Sex.
 
-For anyone who want access to a useful resource to continue working through R, I recommend the [Pirates's](https://bookdown.org/ndphillips/YaRrr/t-test-t-test.html) guide to RRRRRR. 
+For anyone who want access to a useful resource to continue working through R, I recommend the [Pirates's](https://bookdown.org/ndphillips/YaRrr/t-test-t-test.html) guide to RRRRRR.
 
 ## Viewing our data
 
@@ -95,11 +95,7 @@ plot_2 +  facet_grid(~sex ~island)
 
 ## Conducting analyses
 
-Now that we've seen some examples of data visualisation, and seen some basics of working with R, it's time to run some analyses on the data. On the menu today, we will run through:
-- t-tests 
-- ANOVAS (and posthoc tests) 
-- Correlation analyses 
-- Regression analyses
+Now that we've seen some examples of data visualisation, and seen some basics of working with R, it's time to run some analyses on the data. On the menu today, we will run through: - t-tests - ANOVAS (and posthoc tests) - Correlation analyses - Regression analyses
 
 ### T - test
 
@@ -196,7 +192,7 @@ ggplot(t_test_data,
 
 ### ANOVA (way to analyse our data in R)
 
-Now we have covered our T-test, let's have a dive into the ANOVA world. This time we will examine differences in flipper length between the different species of penguin. 
+Now we have covered our T-test, let's have a dive into the ANOVA world. This time we will examine differences in flipper length between the different species of penguin.
 
 ```{r}
 
@@ -207,7 +203,7 @@ anova_data <- penguins %>%
 
 #### Assumption checking
 
-As previously, we need to test our assumptions for the ANOVA, else we risk misleading results. And once again, we 
+As previously, we need to test our assumptions for the ANOVA, else we risk misleading results. And once again, we
 
 ```{r}
 
@@ -281,7 +277,7 @@ ggplot(anova_data,
 
 ### Correlation analyses
 
-Now to move on to examining correlations. Once again, we will need to perform some initial data tidying to ensure we can run our analyses. 
+Now to move on to examining correlations. Once again, we will need to perform some initial data tidying to ensure we can run our analyses.
 
 ```{r}
 
@@ -298,7 +294,7 @@ stratified_corr_data <- penguins %>%
 
 #### Assumption tests - note
 
-For correlations, we need to inspect the residuals (the distance each point on a scatter graph has beetween itself and the line of best fit). So we will temporarily delay the assumption tests for now, and jump straight to our analysis. 
+For correlations, we need to inspect the residuals (the distance each point on a scatter graph has beetween itself and the line of best fit). So we will temporarily delay the assumption tests for now, and jump straight to our analysis.
 
 #### Analysis
 
@@ -316,7 +312,6 @@ strat_results
 summary(strat_results)
 
 ```
-
 
 #### Back to assumption checking
 
@@ -415,13 +410,16 @@ ggplot(regression_data,
 #### Coefficent plotting - bonus extra
 
 We can also R to do some fancy coefficient plotting - with confidence intervals. This can be a useful way to help improve our understanding of our model through using a visual representation of our coefficents. This is achieved using the `ggstats` package, which allows for quick plots, and versatility with the `ggplot` features.
+
 ```{r}
 # Coefficent plot
 ggcoef_table(model_1)
 ggcoef_table(model_2)
 ggcoef_table(model_3)
 ```
+
 The `ggstats` package also allows us to directly compare our models through the `ggcoef_compare()` function. This can be very useful in detecting and understanding any mediations and potential moderation effects that might be present in our analysis.
+
 ```{r}
 # Comparing coefficent plots
 
@@ -436,7 +434,6 @@ ggcoef_compare(models) # All in one plot
 ggcoef_compare(models, type = "faceted") # Faceted to split by model - easier to interpret.
 
 ```
-
 
 #### Using regression for categorical data?!
 
