@@ -28,7 +28,7 @@ Tips: - Make sure to save your script in the same folder as your dataset. - This
 This is a more technical aspect of using R. But, doing so will help ensure good data management practices. So whilst it may appear scary, this will help to keep your research organised, your files discoverable, and your ethics committee happy. The key concept for today is that we need all aspects of our analysis in the same folder. This includes the script we are working with, and the data set. So lets run through these steps:
 
 1)  Create analysis folder.
-2)  [Download dataset](insert%20link%20here), and move to our analysis folder.
+2)  [Download dataset](https://github.com/DCS-training/From-SPSS-to-R-How-to-Make-Your-Statistical-Analysis-Reproducible/blob/main/~survey_data.csv), and move to our analysis folder.
 3)  Save our analysis script (this document) into analysis folder.
 4)  Set working directory: Click `Session` on top panel, move to `set working directory`, click `To source file location`. This will tell R to work within the folder that your current R script is saved in. 4a) Alternatively, if you are switched on with your path locations, you can use `setwd("~.../.../)` [fill in the gaps as appropriate]. However, this can be tricky. I tend to copy and paste from the above steps, as I'm prone to typos.
 
