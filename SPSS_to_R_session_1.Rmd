@@ -487,25 +487,42 @@ Linear regressions, ANOVA's, and t-test are practically the same thing (mathemat
 
 reg_model <- lm(flipper_length_mm ~ species ,
                 regression_data)
+summary(reg_model)
+
+```
+
+```{r}
+# Setting + 0 removes the intercept, and replaces it with the reference variable. This in effect converts our analysis to an ANOVA with post-hoc tests.
 
 anova_style_model <- lm(flipper_length_mm ~ species  + 0,
                         regression_data)
 
+summary(anova_style_model)
+```
+
+```{r}
+# Now compare the above model with the ANOVA and post-hoc tests. 
 anova_model <- aov(flipper_length_mm ~ species , regression_data)
+
+summary(anova_model)
 
 post_hoc <- PostHocTest(anova_model, 
             method = "lsd", 
             conf.level = 0.95, ordered = FALSE)
+
+post_hoc
 ```
 
 ```{r}
-# Comparing outputs
+# Comparing outputs - look at the F value, model significance and df.What similarities/differences do you notice? 
+ 
 summary(reg_model)
 summary(anova_model)
+summary(anova_style_model)
 ```
 
 ```{r}
-# Comparing outputs between groups
+# Comparing outputs between groups - compare the estimate with the "diff". What patterns do you notice? 
 summary(anova_style_model)
 post_hoc
 
