@@ -49,7 +49,7 @@ view(penguins) # Look at the whole data set. Not advised for big data projects.
 
 We can also use R to generate plots, for example:
 
-```{r pressure, echo=FALSE}
+```{r , echo=FALSE}
 #base R
 plot(penguins$species, 
      penguins$flipper_length_mm ) 
@@ -59,7 +59,9 @@ plot(penguins$bill_length_mm,
 
 hist(penguins$flipper_length_mm)
 boxplot(penguins$flipper_length_mm )
+```
 
+```{r, echo = FALSE}
 # ggplot - grammar of graphics
 ## Here we have assinged our plot code to "plot_1", using the assingment arrow `<-`.
 plot_1 <- ggplot(data = penguins, 
@@ -134,7 +136,9 @@ ks.test(t_test_data$flipper_length_mm, 'pnorm')
 LeveneTest(flipper_length_mm ~ sex, data = t_test_data)
 
 ## As normality is not equal, the double peak in histogram may be caused by sex differences (as indicated by unequal variance). We will use ggplot to check.
+```
 
+```{r}
 ggplot(t_test_data,
        aes(x = bill_length_mm, fill = sex)) +
   geom_histogram(position = "dodge") +
@@ -168,17 +172,20 @@ t.test(flipper_length_mm ~ sex, data = t_test_data) #base R version
 t_test(flipper_length_mm ~ sex, method = "students", data = t_test_data) # rstaxix version
 
 t.test(flipper_length_mm ~ sex, method = "student",data = t_test_data) #base R version
+```
 
-
+```{r}
 ### Summary statistics for reporting
 
 t_test_data %>% 
   group_by(sex) %>% 
   summarise(mean_flipper_length = round(mean(flipper_length_mm), 2),
             sd_flipper_length =round(sd(flipper_length_mm), 2))
+```
+
 
 ### Plotting our results
-
+```{r}
 ggplot(t_test_data,
        aes(x = sex, y = flipper_length_mm))+
   geom_boxplot() +
@@ -217,7 +224,9 @@ ggplot(anova_data,
   facet_wrap(~species) +
   labs(title = "Normal distribution, within each sex",
        subtitle = "We apologise again for the fault in the subtitles...")
+```
 
+```{r}
 ## re-running tests - normality assumed!
 norm_test_a <- anova_data %>% 
   filter(species == "Adelie") 
@@ -260,7 +269,9 @@ anova_data %>%
   summarise(mean_flipper_length = round(mean(flipper_length_mm), 2),
             sd_flipper_length =round(sd(flipper_length_mm), 2))
 
+```
 
+```{r}
 # Visualising results
 
 ggplot(anova_data,
@@ -294,7 +305,7 @@ stratified_corr_data <- penguins %>%
 
 #### Assumption tests - note
 
-For correlations, we need to inspect the residuals (the distance each point on a scatter graph has beetween itself and the line of best fit). So we will temporarily delay the assumption tests for now, and jump straight to our analysis.
+For correlations, we need to inspect the residuals (the distance each point on a scatter graph has between itself and the line of best fit). So we will temporarily delay the assumption tests for now, and jump straight to our analysis.
 
 #### Analysis
 
@@ -336,7 +347,7 @@ ggplot(penguins,
 
 ggplot(penguins,
        aes(x =bill_length_mm, y = bill_depth_mm
-           #,color = species
+          # ,color = species
            )) +
   geom_point(position = "jitter", alpha = .7 ) +
   geom_smooth(method = "lm")
@@ -369,16 +380,49 @@ model_2 <- lm(flipper_length_mm ~ bill_length_mm + bill_depth_mm + sex + species
 model_3 <- lm(flipper_length_mm ~ bill_length_mm + bill_depth_mm + sex * species,
               data = regression_data )
 
+```
 
+```{r}
 # Step 2 - viewing and interpreting results
 summary(model_1)
 summary(model_2)
 summary(model_3)
+```
 
+### Standardised Coefficients (Beta)
+
+Unfortunatley, R does not provide standardised coefficents by default, and getting hold of them ourselves takes a little more work. But fortunatley, converting the output to get hold of standardised coefficients has been provided for you here! It makes use of the `scale()` function, which standardises your *continuous* variables by turning them into Z-scores. This allows for clearer comparison of effect sizes between coefficients.
+
+As categorical variables are already dummy coded, they do not need to be standardised - as they already have been to some extent. 
+
+```{r}
+# Step 1 - defining our models
+## general pattern: lm(outcome ~ predictor, data)
+standardised_model_1 <- lm(scale(flipper_length_mm) ~ scale(bill_length_mm) + scale(bill_depth_mm) + sex,
+              data = regression_data )
+
+
+## Compare standardised and default model. What similarities and differences do you see? 
+summary(standardised_model_1)
+summary(model_1)
+
+```
+
+```{r}
+# Step 2 - viewing and interpreting results
+summary(model_1)
+summary(model_2)
+summary(model_3)
+```
+
+
+```{r}
 # Step 3 - statistically comparing models
 anova(model_1, model_2, model_3)
 anova(model_2, model_3)
+```
 
+```{r}
 # Step 4 - assumption tests
 plot(model_1)
 plot(model_2)
@@ -392,7 +436,7 @@ plot(model_3)
 ggplot(regression_data, 
        aes(x= bill_length_mm, y = flipper_length_mm)) +
   geom_point(position = "jitter", alpha = .7, 
-             aes(col = bill_depth_mm)) +
+             aes(col = bill_depth_mm, size = bill_depth_mm)) +
   geom_smooth(method = "lm")+
   facet_wrap(~species)+
  # theme_apa()+
@@ -452,16 +496,18 @@ anova_model <- aov(flipper_length_mm ~ species , regression_data)
 post_hoc <- PostHocTest(anova_model, 
             method = "lsd", 
             conf.level = 0.95, ordered = FALSE)
+```
 
+```{r}
 # Comparing outputs
 summary(reg_model)
 summary(anova_model)
+```
 
+```{r}
 # Comparing outputs between groups
 summary(anova_style_model)
 post_hoc
-
-
 
 ```
 

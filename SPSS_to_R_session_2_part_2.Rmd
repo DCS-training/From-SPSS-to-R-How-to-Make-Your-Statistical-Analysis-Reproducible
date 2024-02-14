@@ -12,9 +12,9 @@ library(rstatix)
 library(tidyverse)
 library(DescTools)
 library(correlation)
-library(gt)
 library(gtable)
 library(gtsummary)
+library(flextable)
 library(jtools) # Useful for generating APA ready plots
 ```
 
@@ -34,7 +34,9 @@ From there, we will perform a regression analysis to predict depression scores w
 
 We will also use this to demonstrate how we can use R to generate our analysis reports. So no more copy and pasting. Just smoooooooth sailing.
 
-Here we will be taking full advantage of the amazing `gtsummary()` package to conduct and report our t-tests. Their package makes it super easy to generate publication ready tables, and it can be rendered into Word documents thorugh R! For more information on how to use the package, please check out their [vignettes](https://www.danieldsjoberg.com/gtsummary/articles/tbl_summary.html).
+Here we will be taking advantage of the `flextable` and `gtsummary` packages to conduct and report our statistics. These package makes it super easy to generate publication ready tables, and it can be rendered into Word documents thorugh R!
+
+For more information on how to use the package, please check out the `flextable` [vignettes](https://ardata-fr.github.io/flextable-book/) and the `gtsummary` [vignettes](https://www.danieldsjoberg.com/gtsummary/articles/tbl_summary.html).
 
 The code might look a little intimidating, but we will walk you through it so that you can also use this for your own analysis.
 
@@ -42,7 +44,7 @@ For each analysis, we will display the raw version and the tidied version. We wi
 
 ## Summary Statistics
 
-The code for the summary statistics table has been set to display most of the common descriptive summary statistics. Any that columns that are not needed can be deleted manually in the rendered word document (Or by digging into `get_summary_stats()` by looking up the [R documentation](https://www.rdocumentation.org/packages/rstatix/versions/0.7.2/topics/get_summary_stats)).
+The code for the summary statistics table has been set to display most of the common descriptive summary statistics. Any columns that are not needed can be deleted manually in the rendered word document (Or by digging into `get_summary_stats()` by looking up the [R documentation](https://www.rdocumentation.org/packages/rstatix/versions/0.7.2/topics/get_summary_stats)). 
 
 ```{r, echo = FALSE, message= FALSE}
 
@@ -53,14 +55,14 @@ table <- df_tidy %>%
     as.data.frame()
 
 
-gt(table)  # Converts table to gt object, which makes it prettier. 
+as_flextable(table)  # Converts table to flextable, which makes it prettier and allows for rendering into Word. 
  
 
 ```
 
 ### Cronbach's alphas
 
-This is probably the most complicated part of the worksheet, as it requires using a combination of different functions. However, we have tried to compile the code so that you can copy, paste and adjust to your own needs. 
+This is probably the most complicated part of the worksheet, as it requires using a combination of different functions. However, we have tried to compile the code so that you can copy, paste and adjust to your own needs.
 
 ```{r, echo = FALSE, message = FALSE}
 
@@ -95,7 +97,7 @@ data.frame(Measure_name, alpha_values) %>% # Choosing our objects from step 3
   mutate(alpha_values = round(alpha_values, 2)) %>% # Rounding to 2 decimal places
   dplyr::rename( `Measure` = Measure_name, # Renaming so we can include spaces
     `Cronbach alpha` = alpha_values ) %>% 
-  gt() # Using gt() to make prettier table that renders to word.
+  flextable() # Using flextable() to make prettier table that renders to word.
 ```
 
 ## T-test report
@@ -139,7 +141,8 @@ summary(results, redundant = TRUE)
 ```
 
 ### Publication ready(er) results
-Please note that the correlation matrix is left with redundant values. This is to allow you to decide if you want to manually display the lower or upper triangle. Also, a bug in the `correlation` package rearranges the display in a displeasing manner when `redundant = FALSE`. But thankfully, we can edit our output to our needs in the rendered word document. 
+
+Please note that the correlation matrix is left with redundant values. This is to allow you to decide if you want to manually display the lower or upper triangle. Also, a bug in the `correlation` package rearranges the display in a displeasing manner when `redundant = FALSE`. But thankfully, we can edit our output to our needs in the rendered word document.
 
 ```{r, results = "asis", echo = FALSE, message = FALSE}
 
@@ -173,14 +176,11 @@ summary(model)
 
 ### Publication ready(er) results
 
-Please note that some of the table will need editing/re-arranging. For now, I'm not clever enough to do it here. But, I can edit it within the finished word document.
+I have recently discovered the `flextable` package, and it is amazing! It will convert your model into a publication ready format in word with minimal effort. Simply take your defined model, and wrap it in the `as_flextable()` function. More information on `flextable` can be found [here](https://ardata-fr.github.io/flextable-book/index.html).
 
 ```{r, echo = FALSE, message = FALSE}
 # Pretty results 
-tbl_regression(model) %>% 
-  modify_column_unhide(column = std.error) %>% 
-  add_glance_table(include = c(r.squared, adj.r.squared, 
-                               statistic, df, df.residual, p.value)) 
+as_flextable(model)
 ```
 
 ### Publication ready plot
