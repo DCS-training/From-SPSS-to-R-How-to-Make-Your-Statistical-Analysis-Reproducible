@@ -2,7 +2,9 @@
 title: "SPSS to R: analysis report"
 author: "Rhys Davies"
 date: "`r Sys.Date()`"
-output: word_document
+output: 
+  word_document:
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -16,6 +18,8 @@ library(gtable)
 library(gtsummary)
 library(flextable)
 library(jtools) # Useful for generating APA ready plots
+
+
 ```
 
 Before cracking on with the second part of today's session, we are going to quickly learn about how R can be used to render documents. This is done using the `Knit` button. To tidy our end document, we will also use some extra commands in our code chunks. The `echo=FALSE` is used to prevent our code from being rendered. Meanwhile, `message = FALSE` is used to prevent any warning messages from being rendered.
