@@ -2,7 +2,10 @@
 title: "SPSS to R Conversion - Session 2"
 author: "Rhys Davies"
 date: "`r Sys.Date()`"
-output: html
+output: 
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
