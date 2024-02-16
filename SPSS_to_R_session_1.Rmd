@@ -25,6 +25,9 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this. To run the code, click the small green arrow in the code chunk, or press `ctrl` + `enter` together.
 
+
+For anyone who want access to a useful resource to continue working through R, I recommend the [Pirates's](https://bookdown.org/ndphillips/YaRrr/t-test-t-test.html) guide to **RRRRRR**.
+
 ## Session aims
 
 -   Learn how to download and run R studio.
@@ -35,9 +38,9 @@ When you click the **Knit** button a document will be generated that includes bo
 
 ## Getting started
 
-Today, we will be working with the [**Palmer Penguins**](https://allisonhorst.github.io/palmerpenguins/) data set. This data set investigates the differences in flipper length, and bill length + depth, between different species of Penguins, across different island, and across Penguin Sex.
+Today, we will be working with the [**Palmer Penguins**](https://allisonhorst.github.io/palmerpenguins/) data set. This data set investigates the differences in flipper length, and bill length + depth, between different species of Penguins, across different island, and across the sex of Penguins.
 
-For anyone who want access to a useful resource to continue working through R, I recommend the [Pirates's](https://bookdown.org/ndphillips/YaRrr/t-test-t-test.html) guide to RRRRRR.
+Please note that there are multiple ways to conduct our analyses in R. So don't be afraid if you've come across something different in the past. Just use the method you find that works best for you.
 
 ## Viewing our data
 
@@ -69,40 +72,41 @@ boxplot(penguins$flipper_length_mm )
 ## Here we have assinged our plot code to "plot_1", using the assingment arrow `<-`.
 plot_1 <- ggplot(data = penguins, 
        aes(x = species, y = flipper_length_mm)) +
-  geom_boxplot() + 
-  labs(title = "Pretty Penguins Plot",
-       subtitle = "My sister was bitten by a penguin once...",
-       x = "Penguin Species",
-       y = "Flipper Length")
+  geom_boxplot()
 
 plot_1
 
 ## We can use the assigned object to further customise our code if we want to
-plot_1 + facet_wrap(~sex)
+plot_1 + facet_wrap(~sex)  + 
+  labs(title = "Pretty Penguins Plot",
+       subtitle = "My sister was bitten by a penguin once...",
+       x = "Penguin Species",
+       y = "Flipper Length"
+       )
 
 
 ## We can also use ggplot to visualise statistical models
 plot_2 <- ggplot(data = penguins, 
        aes(x = bill_length_mm, y = flipper_length_mm, color = species)) +
   geom_point() + 
-  geom_smooth(method = "lm") +
+  geom_smooth(method = "lm") 
+  
+
+plot_2 
+
+plot_2 +  facet_grid(~sex ~island) +
   labs(title = "Another Pretty Penguins Plot",
        subtitle = str_wrap("No realli! She was karving her initials on the penguin with the sharpened end of an interspace toothbrush given to her by Svenge...", 80),
        x = "Bill length (mm)",
        y = "Flipper Length (mm)") + 
   theme(legend.position = "bottom")
-  
-
-plot_2 
-
-plot_2 +  facet_grid(~sex ~island) 
 ```
 
 ## Conducting analyses
 
 Now that we've seen some examples of data visualisation, and seen some basics of working with R, it's time to run some analyses on the data. On the menu today, we will run through: - t-tests - ANOVAS (and posthoc tests) - Correlation analyses - Regression analyses
 
-### T - test
+## T - test
 
 Our classic t-test. Our go-to tool for investigating differences between 2 groups. For this example, we are going to investigate if there is a significant difference in Flipper Length between male and female penguins. But in order to do so, we will first need to examine our data to see if it is appropriate
 
@@ -127,7 +131,7 @@ summary(t_test_data$sex)
 
 Now that our data is appropriately filtered for the t-test, it's time to run some quick diagnostics to determine if our assumptions are met.
 
-#### Assumption tests
+### Assumption tests
 
 ```{r}
 # Checking normality
@@ -159,7 +163,7 @@ norm_test_m <- t_test_data %>%
   shapiro.test(norm_test_m$flipper_length_mm)
 ```
 
-#### The analysis
+### The analysis
 
 So our data meets the normality assumption, but does not meet the equal variance assumption. What do we do? Well, we opt for the Welch's t-test. Thankfully, this is already the default option for R. Additionally, many [applied statistical researchers](https://research.tue.nl/en/publications/why-psychologists-should-by-default-use-welchs-t-test-instead-of-) are calling for its use over the student t-test, as it is more robust to unequal variances, and performs just as well with equal variance. That is, it does both with less risk of misleading outputs.
 
@@ -200,7 +204,7 @@ ggplot(t_test_data,
 
 ```
 
-### ANOVA (way to analyse our data in R)
+## ANOVA (way to analyse our data in R)
 
 Now we have covered our T-test, let's have a dive into the ANOVA world. This time we will examine differences in flipper length between the different species of penguin.
 
@@ -211,7 +215,7 @@ anova_data <- penguins %>%
 
 ```
 
-#### Assumption checking
+### Assumption checking
 
 As previously, we need to test our assumptions for the ANOVA, else we risk misleading results. And once again, we
 
@@ -246,7 +250,12 @@ norm_test_a <- anova_data %>%
 
 So our data is normally distributed across the 3 species (apart from Gentoo). But it approximates normality, and so we can commit our analyses.
 
-#### The analysis
+### The analysis
+
+Now it's time to define our analysis. In R, we define our ANOVA model using the `aov` function. From there, our go to formula is: 
+`aov(outcome_variable ~ predictor_group_variable, data)`. 
+
+We then use summary to view the results, and can run the model through post-hoc tests if required.
 
 ```{r}
 
@@ -264,70 +273,98 @@ PostHocTest(model,
             conf.level = 0.95, ordered = FALSE)
 ```
 
-```{r}
-# Summary statistics
+### Summary statistics. 
+
+To get hold of our summary statistics, we need to do some data wrangling. This will make use of the `tidyverse` family of functions. 
+
+First off, we use `group_by()` to tell R which categorical variable we want our summaries to be focused on. We can use as many group variables as we like here, but make sure your order follows any hierarchical patterns of your data... Otherwise, the interpretation might be odd.
+
+From there, we use `summarise()` to provide our summarised statistics across our chosen group variable.  We choose a meaningful name, and then apply a function to our variable. As seen below, you can combine functions. We're wrapping ours in the `round()` function, so that we can decide how many decimal places we want the analysis to go to.
+
+```{r summary_stats}
+
+
 
 anova_data %>% 
-  group_by(species) %>% 
+  group_by(species) %>%  # Try playing around with the "sex" and "island" variables here. 
   summarise(mean_flipper_length = round(mean(flipper_length_mm), 2),
             sd_flipper_length =round(sd(flipper_length_mm), 2))
 
+# task: include a `median()` summarised statistic for flipper_length. Call it median_flipper_length (if you like).
+
 ```
 
+### Visualising results
+
+Now that we have conducted our ANOVA, it's time to visualise the analysis to ensure that our understanding of the analysis is accurate. 
+
+Here we will overlap different plot aspects to communicate our model assumptions. The `geom_violin()` is used to show the distributions of each group. The `geom_boxplot()` to communicate the **median** and **inter quartile range** of our data groups. 
+
+There are so many options for customising, so it can be adjusted entierly for your needs.
+
 ```{r}
-# Visualising results
+
 
 ggplot(anova_data,
-       aes(x = species, y = flipper_length_mm))+
-  geom_boxplot() +
+       aes(x = species,
+           y = flipper_length_mm,
+           fill = species) # fill allows us to fill an object colour by a variable. Useful here for making a more visually appealing plot.
+       )+
+  geom_violin( # violin plots helps us visualise distributions
+             alpha = .7 # alpha adjusts transparency of points
+             ) +
+  geom_boxplot(alpha = .7, width = .5) + 
   theme_apa() +
+  theme(legend.position = "none") + # 
   labs(title = "Penguininal Differences in Flipper Lengths",
-       subtitle = "",
+       subtitle = "...",
        x = "Penguin Species",
        y = "Flipper Length (mm)")
 
 
 ```
 
-### Correlation analyses
+## Correlation analyses
 
 Now to move on to examining correlations. Once again, we will need to perform some initial data tidying to ensure we can run our analyses.
 
 ```{r}
 
 corr_data <- penguins %>%
-  select(flipper_length_mm, bill_length_mm, bill_depth_mm) 
+  select(flipper_length_mm, bill_length_mm, bill_depth_mm) %>%
+  na.omit() # we're using na.omit to remove missing values. Another useful function!
 
 stratified_corr_data <- penguins %>%
   select(flipper_length_mm, bill_length_mm,
          bill_depth_mm, species) %>%
-  group_by(species)
+  group_by(species) %>% 
+  na.omit()
 
 
 ```
 
-#### Assumption tests - note
+### Assumption tests - note
 
 For correlations, we need to inspect the residuals (the distance each point on a scatter graph has between itself and the line of best fit). So we will temporarily delay the assumption tests for now, and jump straight to our analysis.
 
-#### Analysis
+### Analysis
 
 ```{r}
 
 
 results <- correlation(corr_data)
 results
-summary(results)
+summary(results, redundant = TRUE)
 
 
 
 strat_results <- correlation(stratified_corr_data)
 strat_results
-summary(strat_results)
+summary(strat_results, redundant = TRUE)
 
 ```
 
-#### Back to assumption checking
+### Back to assumption checking
 
 For correlations, testing the assumptions is best done through visualising the data. Now before we even get to residuals, play around and compare the plots in when species is and is not accounted for. Behold the [Simpson Paradox](https://en.wikipedia.org/wiki/Simpson%27s_paradox) in its glory!
 
@@ -357,7 +394,7 @@ ggplot(penguins,
 
 ```
 
-### Regression analysis
+## Regression analysis
 
 And now to the final stages of this session. Let's regress to the regression. We will focus here on predicting penguin flipper length. We will also use some features of R to help you statistically determine which model best explains the variance in the penguin data.
 
@@ -368,19 +405,24 @@ regression_data <- penguins %>%
 
 ```
 
-#### Analysis
+### Analysis
+
+Defining our linear models in R is nice and simple. It follows a similar formula to the `aov()` model setting from above. We set our outcome variable first, and then define our predictor variables. As a bonus, R will also automatically dummy code any predictor variables for us!
+
+For those interested in interaction/moderation analyses - R also makes this very simple. Replace the `+` with a `*` and it will add the interaction term to your model. Play around with the models below if you want to test it. 
+
 
 ```{r}
 # Step 1 - defining our models
 ## general pattern: lm(outcome ~ predictor, data)
-model_1 <- lm(flipper_length_mm ~ bill_length_mm + bill_depth_mm + sex,
+model_1 <- lm(flipper_length_mm ~ bill_length_mm,
               data = regression_data )
 
 
-model_2 <- lm(flipper_length_mm ~ bill_length_mm + bill_depth_mm + sex + species,
+model_2 <- lm(flipper_length_mm ~ bill_length_mm + bill_depth_mm ,
               data = regression_data )
 
-model_3 <- lm(flipper_length_mm ~ bill_length_mm + bill_depth_mm + sex * species,
+model_3 <- lm(flipper_length_mm ~ bill_length_mm + bill_depth_mm + sex ,
               data = regression_data )
 
 ```
@@ -401,48 +443,51 @@ As categorical variables are already dummy coded, they do not need to be standar
 ```{r}
 # Step 1 - defining our models
 ## general pattern: lm(outcome ~ predictor, data)
-standardised_model_1 <- lm(scale(flipper_length_mm) ~ scale(bill_length_mm) + scale(bill_depth_mm) + sex,
+standardised_model_3 <- lm(scale(flipper_length_mm) ~ scale(bill_length_mm) + scale(bill_depth_mm) + sex,
               data = regression_data )
 
 
 ## Compare standardised and default model. What similarities and differences do you see? 
-summary(standardised_model_1)
-summary(model_1)
-
-```
-
-```{r}
-# Step 2 - viewing and interpreting results
-summary(model_1)
-summary(model_2)
+summary(standardised_model_3)
 summary(model_3)
+
 ```
 
+### Comparing analyses
 
+We can use the `anova()` function to statistically compare our models on the basis of sum of squares and degrees of freedom. R will then perfom an F test to help us determine if one model significantly improves upon the other. 
 ```{r}
 # Step 3 - statistically comparing models
 anova(model_1, model_2, model_3)
 anova(model_2, model_3)
 ```
+### Assumption tests
+
+By wrapping our model in the `plot()` function, we can visualise the assumption tests underlying our analyses. 
 
 ```{r}
 # Step 4 - assumption tests
 plot(model_1)
-plot(model_2)
-plot(model_3)
+
 ```
 
-#### Visualising our data
-
+### Visualising our data
+Lets say we want to visualise our third model. We have a few different coefficents to take care of. Thankfully, ggplot allows for to play with a variety of 
 ```{r}
 
-ggplot(regression_data, 
-       aes(x= bill_length_mm, y = flipper_length_mm)) +
-  geom_point(position = "jitter", alpha = .7, 
-             aes(col = bill_depth_mm, size = bill_depth_mm)) +
+summary(model_3)
+
+ggplot(data = regression_data, # definining the data
+       aes(x= bill_length_mm, # main predictor variable
+            col = bill_depth_mm, # setting color as 2nd predictor
+           y = flipper_length_mm) # y is our outcome variable
+       ) +
+  geom_point(position = "jitter", # jitter adds a teeny amount of movement to each point. Useful for overlapping data
+             alpha = .7  # alpha is a measure of transparency. Useful for overlapping points
+             ) +
   geom_smooth(method = "lm")+
-  facet_wrap(~species)+
- # theme_apa()+
+  facet_wrap(~sex) + # Finally setting sex as another predictor by faceting
+  theme_apa()+
   theme(legend.position = "right") +
   labs(title = "We can use ggplot to visualise multiple dimensions",
        subtitle = "This can be very useful for regression models",
@@ -454,7 +499,7 @@ ggplot(regression_data,
 
 ```
 
-#### Coefficent plotting - bonus extra
+### Coefficent plotting - bonus extra
 
 We can also R to do some fancy coefficient plotting - with confidence intervals. This can be a useful way to help improve our understanding of our model through using a visual representation of our coefficents. This is achieved using the `ggstats` package, which allows for quick plots, and versatility with the `ggplot` features.
 
@@ -467,14 +512,16 @@ ggcoef_table(model_3)
 
 The `ggstats` package also allows us to directly compare our models through the `ggcoef_compare()` function. This can be very useful in detecting and understanding any mediations and potential moderation effects that might be present in our analysis.
 
+### Comparing coefficent plots
+
 ```{r}
 # Comparing coefficent plots
 
 ## step 1 - create a list item of our models
 models <- list(
   "basic model" = model_1,
-  "full model"  = model_2,
-  "Moderated model" = model_3
+  "second model"  = model_2,
+  "full model" = model_3
 )
 
 ggcoef_compare(models) # All in one plot
@@ -482,9 +529,13 @@ ggcoef_compare(models, type = "faceted") # Faceted to split by model - easier to
 
 ```
 
-#### Using regression for categorical data?!
+## Using regression for categorical data?! (bonus section)
 
-Linear regressions, ANOVA's, and t-test are practically the same thing (mathematically, the ANOVA and the t-test are just specific forms of linear models). R is more forgiving than SPSS here, as we do not need to manually dummy code our categorical variables! Less accidental errors for us.
+Linear regressions, ANOVA's, and t-test are practically the same thing (mathematically, the ANOVA and the t-test are just specific forms of linear models). 
+
+R is more forgiving than SPSS here, as we do not need to manually dummy code our categorical variables! Less accidental errors for us.
+
+This allows for us to play around and compare between these analyses to help improve our conceptual understanding of the analyses we're conducting. 
 
 ```{r}
 
@@ -494,8 +545,12 @@ summary(reg_model)
 
 ```
 
+We can transform our linear model into an ANOVA as well. Setting + 0 removes the intercept, and replaces it with the reference variable. This in effect converts our analysis to an ANOVA with post-hoc tests.
+
+Try comparing the output of the linear regression model with the `anova_style_model` below. What do you notice about the coefficents?
+
 ```{r}
-# Setting + 0 removes the intercept, and replaces it with the reference variable. This in effect converts our analysis to an ANOVA with post-hoc tests.
+# 
 
 anova_style_model <- lm(flipper_length_mm ~ species  + 0,
                         regression_data)
@@ -503,8 +558,12 @@ anova_style_model <- lm(flipper_length_mm ~ species  + 0,
 summary(anova_style_model)
 ```
 
+### ANOVAS and post-hoc example
+
+Now let's re-run our ANOVA and post-hoc tests to compare with the regression outputs. What do we notice? 
+
 ```{r}
-# Now compare the above model with the ANOVA and post-hoc tests. 
+ 
 anova_model <- aov(flipper_length_mm ~ species , regression_data)
 
 summary(anova_model)
@@ -516,23 +575,26 @@ post_hoc <- PostHocTest(anova_model,
 post_hoc
 ```
 
+### Comparing linear models 
+
+Comparing outputs - look at the F value, model significance, df's and even the model coefficents.
+
+What similarities/differences do you notice? 
+
 ```{r}
-# Comparing outputs - look at the F value, model significance and df.What similarities/differences do you notice? 
+
  
 summary(reg_model)
 summary(anova_model)
 summary(anova_style_model)
-```
-
-```{r}
-# Comparing outputs between groups - compare the estimate with the "diff". What patterns do you notice? 
-summary(anova_style_model)
 post_hoc
-
 ```
+### Using data visualisation
+
+Now have a look at the box plot chart from below. How does this translate to each of the model summaries above? 
 
 ```{r}
-# data visualisation to help compare
+
 
 ggplot(regression_data, 
        aes( x= species, y = flipper_length_mm, fill = species)) +
