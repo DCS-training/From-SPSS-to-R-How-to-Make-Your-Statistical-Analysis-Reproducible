@@ -9,14 +9,15 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
+#install.packages("gtable")
+#install.packages("gtsummary")
+#install.packages("flextable")
 library(rstatix)
 library(tidyverse)
-library(DescTools)
 library(correlation)
-library(gtable)
-library(gtsummary)
-library(flextable)
+library(gtable) # Allows for custom tidy tables, which render to Latex, word, pdf, html
+library(gtsummary) # Has ready made tables for summary stats
+library(flextable) # Converts regression tables to pretty publication tables
 library(jtools) # Useful for generating APA ready plots
 
 

@@ -10,8 +10,9 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+install.packages("naniar")
 library(tidyverse)
-
+library(naniar) # Useful package for easy tools of working with missing data
 ```
 
 ## Session aims
@@ -114,7 +115,7 @@ summary(df_1$group)
 We may have also noticed that our dataset contains missing values. Thankfully R has loads of useful packages to make working with missing data much easier. Getting to know what's missing in your life/data is very important to ensure that our analysis is accurate. For today, we will give a quick and easy overview to working with the missing data, using the `naniar` package.
 
 ```{r}
-library(naniar) # Useful package for easy tools of working with missing data
+
 
 pct_miss(df_1) # provides percentage of total missing data
 miss_case_summary(df_1) # breaks down missing data percentage by each case
