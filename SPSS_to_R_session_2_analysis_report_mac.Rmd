@@ -1,0 +1,249 @@
+---
+title: "SPSS to R: analysis report"
+author: "Rhys Davies"
+date: "`r Sys.Date()`"
+output: 
+  word_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("gtable")
+#install.packages("gtsummary")
+#install.packages("ltm")
+#install.packages("huxtable")
+library(rstatix)
+library(tidyverse)
+library(correlation)
+library(huxtable)
+library(gtable) # Allows for custom tidy tables, which render to Latex, word, pdf, html
+library(gtsummary) # Has ready made tables for summary stats
+library(flextable) # Converts regression tables to pretty publication tables
+library(jtools) # Useful for generating APA ready plots
+
+
+```
+
+Before cracking on with the second part of today's session, we are going to quickly learn about how R can be used to render documents. This is done using the `Knit` button. To tidy our end document, we will also use some extra commands in our code chunks. The `echo=FALSE` is used to prevent our code from being rendered. Meanwhile, `message = FALSE` is used to prevent any warning messages from being rendered.
+
+```{r, echo=FALSE, message = FALSE, results= FALSE}
+#code to upload our newly saved file into R.
+df_tidy <- read_csv("~tidy_data.csv") %>% mutate(group = as.factor(group))
+summary(df_tidy) 
+```
+
+## Running and reporting analyses
+
+Now that the hard work of preparing our data is complete. We can run our analyses! Today we will perform t-tests to compare the effect of the intervention on depression, anxiety and stress.
+
+From there, we will perform a regression analysis to predict depression scores whilst controlling for exposure to stressful life events, social support, and the intervention.
+
+We will also use this to demonstrate how we can use R to generate our analysis reports. So no more copy and pasting. Just smoooooooth sailing.
+
+Here we will be taking advantage of the `flextable` and `gtsummary` packages to conduct and report our statistics. These package makes it super easy to generate publication ready tables, and it can be rendered into Word documents thorugh R!
+
+For more information on how to use the package, please check out the `flextable` [vignettes](https://ardata-fr.github.io/flextable-book/) and the `gtsummary` [vignettes](https://www.danieldsjoberg.com/gtsummary/articles/tbl_summary.html).
+
+The code might look a little intimidating, but we will walk you through it so that you can also use this for your own analysis.
+
+For each analysis, we will display the raw version and the tidied version. We will also show you how to render your analysis to finish the session.
+
+## Summary Statistics
+
+The code for the summary statistics table has been set to display most of the common descriptive summary statistics. Any columns that are not needed can be deleted manually in the rendered word document (Or by digging into `get_summary_stats()` by looking up the [R documentation](https://www.rdocumentation.org/packages/rstatix/versions/0.7.2/topics/get_summary_stats)). 
+
+```{r, echo = FALSE, message= FALSE}
+
+table <- df_tidy %>%  
+  get_summary_stats(
+    stress,anxiety,  depression, eventsscore , SOsupport,  # columns to calculate for
+    type = "common") #%>%               # all common summary stats to return
+    #as.data.frame()
+
+ht <- hux(table)
+# Using hux to make prettier tbale, and allows for rendering into Word. 
+# Code below is for additional fotmatting.
+
+bold(ht)[1,]           <- TRUE
+bottom_border(ht)[1,]  <- 0.4
+align(ht)[,2]          <- "right"
+right_padding(ht)      <- 10
+left_padding(ht)       <- 10
+width(ht)              <- 0.35
+number_format(ht)      <- 2
+
+# Re-run ht for reformatted table
+ht 
+
+```
+
+### Cronbach's alphas
+
+This is probably the most complicated part of the worksheet, as it requires using a combination of different functions. However, we have tried to compile the code so that you can copy, paste and adjust to your own needs.
+
+```{r, echo = FALSE, message = FALSE}
+
+# Compiling alphas
+
+## Step 1: compiling subscale variables
+stress_alpha <- df_tidy %>% dplyr::select(dass1, dass6, dass8,
+                                       dass11, dass12, dass14, dass18)
+anxiety_alpha <- df_tidy %>% dplyr::select(dass2, dass4, dass7,
+                                        dass9, dass15, dass19, dass20) 
+depression_alpha <- df_tidy %>% dplyr::select(dass3, dass5, dass10, 
+                                           dass13, dass16, dass17, dass21) 
+
+## Step 2: Running the cronbach.alpha test, and collecting only the score.
+## If the commands below are not working, run `instal.packages("ltm")` in the console first. 
+
+str_alpha_value <- ltm::cronbach.alpha(stress_alpha)[[1]]
+anx_alpha_value <- ltm::cronbach.alpha(anxiety_alpha)[[1]]
+dep_alpha_value <- ltm::cronbach.alpha(depression_alpha)[[1]]
+
+
+## Step 3:Creating Subscale names and cronbach alpha values objects - make sure values align with names
+
+alpha_values <- c(str_alpha_value , anx_alpha_value, dep_alpha_value)
+
+Measure_name <- c("DASS Stress", 
+              "DASS Anxiety",
+              "DASS Depression")
+
+## Step 4: Creating a pretty table
+table <- data.frame(Measure_name, alpha_values) %>% # Choosing our objects from step 3
+  mutate(alpha_values = round(alpha_values, 2)) %>% # Rounding to 2 decimal places
+  dplyr::rename( `Measure` = Measure_name, # Renaming so we can include spaces
+    `Cronbach alpha` = alpha_values ) 
+
+
+ht <- hux(table)
+# Using hux to make prettier tbale, and allows for rendering into Word. 
+# Code below is for additional fotmatting.
+
+bold(ht)[1,]           <- TRUE
+bottom_border(ht)[1,]  <- 0.4
+align(ht)[,2]          <- "right"
+right_padding(ht)      <- 10
+left_padding(ht)       <- 10
+width(ht)              <- 0.35
+number_format(ht)      <- 2
+
+# Re-run ht for reformatted table
+ht 
+
+```
+
+## T-test report
+
+### Raw results
+
+```{r, echo=FALSE, message = FALSE}
+t_test(stress ~ group, data = df_tidy)
+```
+
+### Publication ready(er) results
+
+```{r, echo=FALSE, message = FALSE}
+  df_tidy %>%
+  select(group, anxiety, stress, depression) %>%
+  tbl_summary(by = group, 
+              missing = "no",
+              statistic = list(all_continuous() ~ "{mean} ({sd})")) %>%
+  add_p(everything() ~ "t.test") %>%
+  modify_header( # header needs to be modified to display test statistc and df 
+    statistic = "**t-statistic**", 
+    parameter = "**df**"
+  )  %>%
+  # add a header to the statistic column, which is hidden by default
+  modify_fmt_fun(c(statistic , parameter) ~ style_sigfig)
+```
+
+## Corellation analysis
+
+### Rough results
+
+```{r, results = "asis", echo = FALSE, message = FALSE}
+
+cor_data <- df_tidy %>% 
+  select( anxiety, stress, depression, eventsscore , SOsupport)
+
+results <- correlation(cor_data)
+
+summary(results, redundant = TRUE)
+
+```
+
+### Publication ready(er) results
+
+Please note that the correlation matrix is left with redundant values. This is to allow you to decide if you want to manually display the lower or upper triangle. Also, a bug in the `correlation` package rearranges the display in a displeasing manner when `redundant = FALSE`. But thankfully, we can edit our output to our needs in the rendered word document.
+
+```{r, results = "asis", echo = FALSE, message = FALSE}
+
+ df_tidy %>% dplyr::select( anxiety, stress, depression, eventsscore , SOsupport) %>%
+    rename(`Anxiety` = anxiety ,
+           `Stress` = stress,
+           `Depression` = depression,
+           `Stressful Life Events` =  eventsscore,
+           `Significant Other Support`=  SOsupport) %>% 
+  correlation::correlation() %>% 
+  summary(redundant = TRUE) %>%
+  display()
+
+```
+
+## Regression analysis
+
+```{r, echo = FALSE, message = FALSE}
+# Setting the model
+model <- lm(scale(depression) ~ group * scale(eventsscore) + scale(SOsupport), df_tidy)
+
+```
+
+### Raw results
+
+```{r, echo = FALSE, message = FALSE}
+# Ugly (but useful) results 
+summary(model)
+
+```
+
+### Publication ready(er) results
+
+I have recently discovered the `flextable` package, and it is amazing! It will convert your model into a publication ready format in word with minimal effort. Simply take your defined model, and wrap it in the `as_flextable()` function. More information on `flextable` can be found [here](https://ardata-fr.github.io/flextable-book/index.html).
+
+For mac-users, there appear to be some headaches with the `flextable` package. So here's a mac-friendly version that makes use of the `jtools` and `huxtable` pacakges.
+
+```{r, echo = FALSE, message = FALSE}
+# Pretty results 
+#flextable::as_flextable(model)
+#install.packages(huxtable)
+export_summs(model)
+```
+
+### Publication ready plot
+
+And what use is a fancy table without a fancier plot?! APA guidelines are a little hazy when it comes to plot standards, but here is a good estimate. The title, subtitle and caption have been left empty here, as sometimes it is more useful to edit this within word (sometimes...).
+
+```{r, echo = FALSE, message = FALSE}
+#Generating plot
+ plot <- ggplot(df_tidy,
+                aes(x = eventsscore, y = depression, col = group)
+                ) +
+  geom_point(alpha = .7, position = "jitter")+
+  geom_smooth(method = "lm", se = FALSE) 
+  
+
+#Adding labels and APA theme
+  plot + 
+    #theme_apa()+
+    labs(x = "Exposure to stressful life events",
+         y = "Depression score (DASS)",
+         col = "Condition")  
+    
+
+```
+
+## Finishing session
+
+Now click on `Knit` to prepare your word document with all the prepared analyses.
