@@ -11,8 +11,10 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 install.packages("naniar")
+install.packages("missMethods")
 library(tidyverse)
 library(naniar) # Useful package for easy tools of working with missing data
+library(missMethods) # Useful package for simulating and imputing missing data
 ```
 
 ## Session aims
@@ -147,7 +149,7 @@ Depression_data <- df_2  %>%
 
 #Step 2 - applying rowwise imputation to the selected data
 
-library(missMethods) # Useful package for simulating and imputing missing data
+
 
 Depression_fix <- apply_imputation(Depression_data,
                                    FUN = mean,
