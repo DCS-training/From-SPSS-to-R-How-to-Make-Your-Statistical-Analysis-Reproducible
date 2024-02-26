@@ -1,5 +1,5 @@
 ---
-title: "SPSS to R Conversion - Session 2"
+title: "SPSS to R Conversion - Data Tidying Script"
 author: "Rhys Davies"
 date: "`r Sys.Date()`"
 output: 
