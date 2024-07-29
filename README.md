@@ -85,9 +85,7 @@ Once you have R and R Studio installed, open R Studio
 2.  Enter the Repository URL [https://github.com/DCS-training/From-SPSS-to-R-How-to-Make-Your-Statistical-Analysis-Reproducible](https://github.com/DCS-training/From-SPSS-to-R-How-to-Make-Your-Statistical-Analysis-Reproducible) 
 3.  Select the Name for the directory project and where to save it
 4.  Press Create Project
-5.  Navigate to Day1 >DataVisWithR
-6.  Click on `DataVisDHRSE.Rproj` (this is important to reset the working directory correctly)
-7.  Click on `DataVis.Rmd`
+
 
 ### On Noteable
 1. Go to https://noteable.edina.ac.uk/login
