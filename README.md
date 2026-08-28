@@ -29,7 +29,7 @@ Below are the instructions for setting up.
 2. Signup either via Gmail or GitHub
 3. Go on New Project
 4. New Project from Git Repository
-5. Copy and Paste this repository URL [https://github.com/DCS-training/From-SPSS-to-R-How-to-Make-Your-Statistical-Analysis-Reproducible](https://github.com/DCS-training/From-SPSS-to-R-How-to-Make-Your-Statistical-Analysis-Reproducible) as the Repository URL
+5. Copy and Paste this repository URL [https://github.com/DCS-training/From-SPSS-to-R-How-to-Make-Your-Statistical-Analysis-Reproducible](https://github.com/EFI-training/From-SPSS-to-R-How-to-Make-Your-Statistical-Analysis-Reproducible) as the Repository URL
 6. The Project directory name will filled in automatically
 7. Navigate to the rmd file you want to explore
 
@@ -82,7 +82,7 @@ _Linux_
 Once you have R and R Studio installed, open R Studio
 
 1.  Go to File>New Project> Version Control >Git
-2.  Enter the Repository URL [https://github.com/DCS-training/From-SPSS-to-R-How-to-Make-Your-Statistical-Analysis-Reproducible](https://github.com/DCS-training/From-SPSS-to-R-How-to-Make-Your-Statistical-Analysis-Reproducible) 
+2.  Enter the Repository URL [https://github.com/EFI-training/From-SPSS-to-R-How-to-Make-Your-Statistical-Analysis-Reproducible](https://github.com/EFI-training/From-SPSS-to-R-How-to-Make-Your-Statistical-Analysis-Reproducible) 
 3.  Select the Name for the directory project and where to save it
 4.  Press Create Project
 
@@ -92,7 +92,7 @@ Once you have R and R Studio installed, open R Studio
 2. Login with your EASE credentials
 3. Select RStudio as a personal notebook server and press start
 4. Go to File >New Project>Version Control>Git
-5. Copy and Paste this repository URL [https://github.com/DCS-training/From-SPSS-to-R-How-to-Make-Your-Statistical-Analysis-Reproducible](https://github.com/DCS-training/From-SPSS-to-R-How-to-Make-Your-Statistical-Analysis-Reproducible) as the Repository URL
+5. Copy and Paste this repository URL [https://github.com/EFI-training/From-SPSS-to-R-How-to-Make-Your-Statistical-Analysis-Reproducible](https://github.com/EFI-training/From-SPSS-to-R-How-to-Make-Your-Statistical-Analysis-Reproducible) as the Repository URL
 6. The Project directory name will filled in automatically but you can change it if you want your folder in Notable to have a different name
 7. Decide where to locate the folder. By default, it will locate it in your home directory 
 8. Press Create Project
